@@ -1,0 +1,748 @@
+Program.Sub.ScreenSU.Start
+
+Gui.SS_Form1..Create
+Gui.SS_Form1..Caption("1094/1095-B")
+Gui.SS_Form1..Size(2250,1740)
+Gui.SS_Form1..Position(0,0)
+Gui.SS_Form1..AlwaysOnTop(False)
+Gui.SS_Form1..FontName("Arial")
+Gui.SS_Form1..FontSize(8)
+Gui.SS_Form1..ForeColor(0)
+Gui.SS_Form1..Backcolor(-2147483633)
+Gui.SS_Form1..ControlBox(True)
+Gui.SS_Form1..MaxButton(False)
+Gui.SS_Form1..MinButton(False)
+Gui.SS_Form1..MousePointer(0)
+Gui.SS_Form1..Moveable(True)
+Gui.SS_Form1..Sizeable(False)
+Gui.SS_Form1..ShowInTaskBar(True)
+Gui.SS_Form1..TitleBar(True)
+
+Gui.SS_Form1..Event(unload,ss_form1_unload)
+
+Gui.SS_Form1.lbl_dtp1_year.Create(label)
+Gui.SS_Form1.lbl_dtp1_year.Caption("Filing Year")
+Gui.SS_Form1.lbl_dtp1_year.Visible(True)
+Gui.SS_Form1.lbl_dtp1_year.Size(1800,200)
+Gui.SS_Form1.lbl_dtp1_year.Zorder(1)
+Gui.SS_Form1.lbl_dtp1_year.Position(100,135)
+Gui.SS_Form1.lbl_dtp1_year.Enabled(True)
+Gui.SS_Form1.lbl_dtp1_year.Alignment(0)
+Gui.SS_Form1.lbl_dtp1_year.FontName("Arial")
+Gui.SS_Form1.lbl_dtp1_year.FontSize(8)
+Gui.SS_Form1.lbl_dtp1_year.Backcolor(-2147483633)
+Gui.SS_Form1.lbl_dtp1_year.BackStyle(0)
+Gui.SS_Form1.lbl_dtp1_year.SetInternationalID(242801)
+Gui.SS_Form1.lbl_dtp1_year.Tooltip("")
+Gui.SS_Form1.lbl_dtp1_year.ControlGroup(0)
+
+
+Gui.SS_Form1.dtp1_year.Create(datepicker)
+Gui.SS_Form1.dtp1_year.Visible(True)
+Gui.SS_Form1.dtp1_year.Size(1800,345)
+Gui.SS_Form1.dtp1_year.Zorder(0)
+Gui.SS_Form1.dtp1_year.Position(100,335)
+Gui.SS_Form1.dtp1_year.Enabled(True)
+Gui.SS_Form1.dtp1_year.Checkbox(False)
+Gui.SS_Form1.dtp1_year.TabStop(True)
+Gui.SS_Form1.dtp1_year.TabIndex(1)
+Gui.SS_Form1.dtp1_year.Tooltip("")
+Gui.SS_Form1.dtp1_year.ControlGroup(0)
+Gui.SS_Form1.dtp1_year.DefaultValue("")
+
+
+Gui.SS_Form1.cmd1_Print.Create(button)
+Gui.SS_Form1.cmd1_Print.Caption("Print")
+Gui.SS_Form1.cmd1_Print.Visible(True)
+Gui.SS_Form1.cmd1_Print.Size(1000,360)
+Gui.SS_Form1.cmd1_Print.Zorder(0)
+Gui.SS_Form1.cmd1_Print.Position(100,765)
+Gui.SS_Form1.cmd1_Print.Enabled(True)
+Gui.SS_Form1.cmd1_Print.FontName("Arial")
+Gui.SS_Form1.cmd1_Print.FontSize(8)
+Gui.SS_Form1.cmd1_Print.TabStop(True)
+Gui.SS_Form1.cmd1_Print.TabIndex(2)
+Gui.SS_Form1.cmd1_Print.Tooltip("")
+Gui.SS_Form1.cmd1_Print.ControlGroup(0)
+Gui.SS_Form1.cmd1_Print.DefaultValue("")
+
+Gui.SS_Form1.cmd1_Print.Event(click,cmd1_print_click)
+
+Gui.SS_Form1.cmd1Print.Create(button)
+Gui.SS_Form1.cmd1Print.Caption("Print")
+Gui.SS_Form1.cmd1Print.Visible(True)
+Gui.SS_Form1.cmd1Print.Size(1000,360)
+Gui.SS_Form1.cmd1Print.Zorder(0)
+Gui.SS_Form1.cmd1Print.Position(100,765)
+Gui.SS_Form1.cmd1Print.Enabled(True)
+Gui.SS_Form1.cmd1Print.FontName("Arial")
+Gui.SS_Form1.cmd1Print.FontSize(8)
+Gui.SS_Form1.cmd1Print.SetInternationalID(452800)
+Gui.SS_Form1.cmd1Print.TabStop(True)
+Gui.SS_Form1.cmd1Print.TabIndex(2)
+Gui.SS_Form1.cmd1Print.Tooltip("")
+Gui.SS_Form1.cmd1Print.ControlGroup(0)
+Gui.SS_Form1.cmd1Print.DefaultValue("")
+
+Gui.SS_Form1.cmd1Print.Event(click,cmd1_print_click)
+
+gui.SS_Form1..minx(0)
+gui.SS_Form1..miny(0)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+'Pull Payroll 1095B1-B3 into one UDT (SQL Join).
+'Pull 1095B4 into seperate UDT.
+
+Variable.Global.sFileDirRet.Declare(String)
+Variable.Global.s1095MergDir.Declare(String)
+Variable.Global.s1095TempFiles.Declare(String)
+Variable.Global.s1094TempFiles.Declare(String)
+Variable.Global.iRunID.Declare(Long)
+Variable.Global.iLogID.Declare(Long)
+Variable.Global.iTot1095B.Declare(Long)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+'Openning Main connection
+F.ODBC.connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.puser,V.Ambient.PPass,3000)
+'Shows year only within datepicker
+'Formatting datepicker to only show year
+Gui.SS_Form1.dtp1_year.CustomFormat("yyyy")
+Gui.SS_Form1..Show
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_PY_1094_1095-B.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.Main.End
+
+program.sub.cmd1_print_click.start
+F.Intrinsic.Control.SetErrorHandler("cmd1_print_click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+F.Global.BI.GetRunID(V.Global.iRunID)
+F.Intrinsic.Control.If(V.Ambient.IsInIDE,=,True)
+		'F.Global.BI.StartLogging(V.global.iRunID,0000,0,"",V.global.iLogID)
+F.Intrinsic.Control.Else
+        F.Global.BI.StartLogging(V.Global.iRunID,-1,-1,"",V.global.iLogID)
+F.Intrinsic.Control.EndIf
+
+'Select location to save file
+F.Intrinsic.UI.ShowSaveFileDialog("1094_1095B.pdf","*.pdf",V.Caller.GlobalDir,V.Global.sFileDirRet)
+
+'If a directory has been selected, continue to print pdf. Else, exit program
+F.Intrinsic.Control.If(V.Global.sFileDirRet,<>,"***CANCEL***")
+	'pulling in all 1095B records
+	F.Intrinsic.Control.CallSub(Load_rst_1095b)
+	'Pulling in all 1094B records
+	F.Intrinsic.Control.CallSub(Load_rst_1094b)
+F.Intrinsic.Control.Else
+	'Ending program
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+F.Intrinsic.Control.EndIf
+
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmd1_print_click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_PY_1094_1095-B.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.cmd1_print_click.End
+
+program.sub.PullDefaultInfo.Start
+F.Intrinsic.Control.SetErrorHandler("PullDefaultInfo_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+V.Local.sSql.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sZip.Declare(String)
+V.Local.sZipExtended.Declare(String)
+V.Local.sYr.Declare(String)
+V.Local.sCmpName.Declare(String)
+V.Local.sEIN.Declare(String)
+V.Local.sAddress.Declare(String)
+V.Local.sCity.Declare(String)
+V.Local.sState.Declare(String)
+V.Local.sCols.Declare(String)
+V.Local.sData.Declare(String)
+
+'Loading the employer information out of the company table
+'Company name
+V.Local.sSql.Set("Select Text1 from op_header where id = '401359'")
+F.ODBC.Connection!conx.ExecuteAndReturn(V.Local.sSql,V.Local.sCmpName)
+
+'EIN
+V.Local.sSql.Set("Select Text1 from op_header where id = '401362'")
+F.ODBC.Connection!conx.ExecuteAndReturn(V.Local.sSql,V.Local.sEIN)
+
+'Address
+V.Local.sSql.Set("Select Text1 from op_header where id = '401360' and sequence = '0000'")
+F.ODBC.Connection!conx.ExecuteAndReturn(V.Local.sSql,V.Local.sAddress)
+
+'city
+V.Local.sSql.Set("Select Text1 from op_header where id = '401361' and sequence = '0001'")
+F.ODBC.Connection!conx.ExecuteAndReturn(V.Local.sSql,V.Local.sCity)
+
+'state
+V.Local.sSql.Set("Select Text1 from op_header where id = '401361' and sequence = '0002'")
+F.ODBC.Connection!conx.ExecuteAndReturn(V.Local.sSql,V.Local.sState)
+
+'zip
+V.Local.sSql.Set("Select Text1 from op_header where id = '401361' and sequence = '0003'")
+F.ODBC.Connection!conx.ExecuteAndReturn(V.Local.sSql,V.Local.sZip)
+
+'zip extended
+V.Local.sSql.Set("Select Text1 from op_header where id = '401361' and sequence = '0004'")
+F.ODBC.Connection!conx.ExecuteAndReturn(V.Local.sSql,V.Local.sZipExtended)
+
+F.Intrinsic.Control.If(V.Local.sZipExtended,<>,"")
+	F.Intrinsic.String.Build("{0}-{1}",V.Local.sZip,V.Local.sZipExtended,V.Local.sZip)	
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.String.Format(V.Screen.SS_Form1!dtp1_year.Value,"yyyy",V.Local.sYr)
+
+F.Intrinsic.String.Build("0*!*{0}*!*{1}*!*{2}*!**!**!*{3}*!*{4}*!*{5}*!*{6}",V.Local.sYr,V.Local.sCmpName,V.Local.sEIN,V.Local.sAddress,V.Local.sCity,V.Local.sState,V.Local.sZip,V.Local.sData)
+V.Local.sCols.Set("Rec_ID*!*Filing_Year*!*Filers_Name*!*Ein*!*Contact_Name*!*Telephone*!*Address*!*City*!*State*!*Country_Zip")
+
+F.Data.DataTable.CreateFromString("dt1094B",V.Local.sData,V.Local.sCols,"Long*!*String*!*String*!*String*!*String*!*String*!*String*!*String*!*String*!*String","*!*","",True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("PullDefaultInfo_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_PY_1094_1095-B.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.PullDefaultInfo.End
+
+program.sub.ss_form1_unload.start
+F.Intrinsic.Control.SetErrorHandler("ss_form1_unload_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+'Ending program
+F.ODBC.Connection!conx.Close
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("ss_form1_unload_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_PY_1094_1095-B.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.ss_form1_unload.End
+
+Program.sub.Load_rst_1095B.start
+F.Intrinsic.Control.SetErrorHandler("ss_form1_unload_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+'pulling in all 1095B records
+V.Local.sSQL.Declare(String)
+V.Local.sYr.Declare(String)
+V.Local.sFields.Declare(String)
+V.local.sFieldVals.Declare(String)
+V.local.sTempDir.Declare(String)
+V.Local.sFilesMerg.Declare(String)
+V.Local.sPDFDir.Declare(String)
+V.Local.sDateFormat.Declare(String)
+V.Local.sName.Declare(String)
+V.Local.sFirst.Declare(String)
+V.Local.sMiddle.Declare(String)
+V.Local.sLast.Declare(String)
+V.Local.sCName.Declare(String)
+V.Local.sCFirst.Declare(String)
+V.Local.sCMiddle.Declare(String)
+V.Local.sCLast.Declare(String)
+V.Local.i.Declare(Long)
+V.Local.i2.Declare(Long)
+V.Local.i3.Declare(Long)
+V.Local.iC.Declare(Long)
+V.Local.iC2.Declare(Long)
+V.local.iC3.Declare(Long)
+V.Local.Ord.Declare(Long)
+V.Local.iNext.Declare(Long)
+V.Local.iRec.Declare(Long)
+V.Local.bRet.Declare(Boolean)
+V.Local.sMsg.Declare(String)
+
+'V.uGlobal.u1095Emp.Redim(-1,-1)
+'V.uGlobal.u1095B4.Redim(-1,-1)
+Gui.SS_Form1..Visible(False)
+'Formatting datepicker value to use in SQL statement
+F.Intrinsic.String.Format(V.Screen.SS_Form1!dtp1_year.Value,"yyyy",V.Local.sYr)
+
+'Pulling in Employee_Mstr, PAYROLL_1095B1, PAYROLL_1095B2, and PAYROLL_1095B1
+F.Intrinsic.String.Build("Select a.Rec_ID, a.Policy_Origin, a.Shop_ID, b.Employee, b.Name, b.Social_Security_No, Birthdate, b.Address, b.City, b.State, b.Zip_Code, c.Employer_Name, c.EIN as Employer_EIN, c.Address as Employer_Address, c.City as Employer_City, c.State as Employer_State, c.Country_Zip as Employer_Country_Zip, d.CP_Name, d.Ein as Provider_Ein, d.Telephone as Provider_Telephone, d.Address as Provider_Address, d.City as Provider_City, d.State as Provider_State, d.Country_Zip as Provider_Country_Zip from Payroll_1095B1 as a Left Join V_Employee_mstr as b On a.Employee_Id = b.Employee left Join PAYROLL_1095B2 as c on a.Rec_Id = c.Rec_Id left Join PAYROLL_1095B3 as d on a.Rec_Id = d.Rec_Id Where a.Filing_Year = '{0}' Order by a.Rec_ID",V.Local.sYr,V.Local.sSQL)
+Function.Data.DataTable.CreateFromSQL("dt1095Emp","conx",V.Local.sSql,True)
+
+F.Intrinsic.Control.If(V.DataTable.dt1095Emp.Exists,=,False,"OR",V.DataTable.dt1095Emp.RowCount--,<,0)
+	F.Intrinsic.Control.CallSub(Load_rst_1094b)
+F.Intrinsic.Control.EndIf
+
+'Pulling in PAYROLL_1095B4 since it's a one to many relationship
+V.Local.sSQL.Set("Select Rec_Id, Filing_Id, Covered_Name, SSN, DOB, All_Months, Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec From Payroll_1095B4 Order by Filing_ID,Rec_ID")
+Function.Data.DataTable.CreateFromSQL("dt1095B4","conx",V.Local.sSql,True)
+
+'Copying PDF template from Global\Busint
+F.Intrinsic.String.Build("{0}\Busint\PY_{1}_f1095b.pdf",V.Caller.GlobalDir,V.Local.sYr,V.Local.sPDFDir)
+
+'F.Intrinsic.File.Exists(V.Local.sTempDir.Trim,V.Local.bRet)
+F.Intrinsic.File.Exists(V.Local.sPDFDir,V.Local.bRet)
+F.Intrinsic.Control.If(V.Local.bRet,=,True)
+F.Automation.PDF.Open("F1095B",V.Local.sPDFDir)
+'Getting PDF's field names
+F.Automation.PDF.GetFieldNames("F1095B",V.Local.sFields)
+F.Automation.PDF.Close("F1095B")
+
+'Writing 1095-B PDF
+'F.Intrinsic.Control.For(V.Local.iC,V.uGlobal.u1095Emp.LBound,V.uGlobal.u1095Emp.UBound,1)
+F.Intrinsic.Control.For(V.Local.iC,0,V.DataTable.dt1095Emp.RowCount--,1)
+	'Using this total to put on "total number of 1095B forms" field.
+	F.Intrinsic.Math.Add(V.Global.iTot1095B,1,V.Global.iTot1095B)
+	F.Automation.PDF.Open("F1095B",V.Local.sPDFDir)
+
+	'Building values for PDF fields.
+	'This string build is employee name, SSN, date of birth, street address, and city
+	F.Intrinsic.String.Format(V.DataTable.dt1095Emp(V.Local.iC).Birthdate.FieldVal,"MM/DD/YYYY",V.Local.sDateFormat)
+	F.Intrinsic.Control.If(V.Local.sDateFormat,=,"01/01/1900")
+		V.Local.sDateFormat.Set("")
+	F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.Control.If(V.Local.sYr,>,"2017")
+	
+		'Splitting Employee Name into First name, Middle name and Last name
+		F.Intrinsic.String.Split(V.DataTable.dt1095Emp(V.Local.iC).Name.FieldValTrim," ",V.Local.sName)
+		F.Intrinsic.Control.If(V.Local.sName,<>,"")
+			F.Intrinsic.Control.If(V.Local.sName.UBound,=,2)
+				V.Local.sFirst.Set(V.Local.sName(0))
+				V.Local.sMiddle.Set(V.Local.sName(1))
+				V.Local.sLast.Set(V.Local.sName(2))
+			F.Intrinsic.Control.ElseIf(V.Local.sName.UBound,<,2)
+				V.Local.sFirst.Set(V.Local.sName(0))
+				V.Local.sMiddle.Set("")
+				V.Local.sLast.Set(V.Local.sName(1))
+			F.Intrinsic.Control.ElseIf(V.Local.sName.UBound,>,2)
+				V.Local.sFirst.Set(V.Local.sName(0))
+				V.Local.sMiddle.Set(V.Local.sName(1))
+				V.Local.sLast.Set(V.Local.sName(2))
+				V.Local.i2.Set(3)
+				F.Intrinsic.Control.For(V.Local.i2,V.Local.i2,V.Local.sName.UBound,1)
+					F.Intrinsic.String.Build("{0} {1}",V.Local.sLast,V.Local.sName(V.Local.i2),V.Local.sLast)
+				F.Intrinsic.Control.Next(V.Local.i2)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Else
+			V.Local.sFirst.Set("")
+			V.Local.sMiddle.Set("")
+			V.Local.sLast.Set("")
+		F.Intrinsic.Control.EndIf
+		
+		'Setting Form Field Values
+		F.Intrinsic.String.Build("0*!*0*!*{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}*!*{6}",V.Local.sFirst,V.Local.sMiddle,V.Local.sLast,V.DataTable.dt1095Emp(V.Local.iC).Social_Security_No.FieldVal,V.Local.sDateFormat,V.DataTable.dt1095Emp(V.Local.iC).Address.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).City.FieldVal,V.Local.sFieldVals)
+		'This string build is state, country zip, policy Origin, shop ID, employer name, employer EIN.
+		F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}*!*{6}",V.Local.sFieldVals,V.DataTable.dt1095Emp(V.Local.iC).State.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Zip_Code.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Policy_Origin.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Shop_ID.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Employer_Name.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Employer_EIN.FieldVal,V.Local.sFieldVals)
+		'This string builds employer street, employer city, employer_state, employer zip, provider name
+		F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}",V.Local.sFieldVals,V.DataTable.dt1095Emp(V.Local.iC).Employer_Address.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Employer_City.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Employer_State.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Employer_Country_Zip.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).CP_Name.FieldVal,V.Local.sFieldVals)
+		'This strinb builds provider Ein, provider telephone, provider street address, provider city, provider city, provider state, provider country zip.
+		F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}*!*{6}",V.Local.sFieldVals,V.DataTable.dt1095Emp(V.Local.iC).Provider_Ein.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Provider_Telephone.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Provider_Address.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Provider_City.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Provider_State.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Provider_Country_Zip.FieldVal,V.Local.sFieldVals)
+	
+	F.Intrinsic.Control.Else
+		
+		F.Intrinsic.String.Build("0*!*0*!*{0}*!*{1}*!*{2}*!*{3}*!*{4}",V.DataTable.dt1095Emp(V.Local.iC).Name.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Social_Security_No.FieldVal,V.Local.sDateFormat,V.DataTable.dt1095Emp(V.Local.iC).Address.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).City.FieldVal,V.Local.sFieldVals)
+		'This string build is state, country zip, policy Origin, shop ID, employer name, employer EIN.
+		F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}*!*{6}",V.Local.sFieldVals,V.DataTable.dt1095Emp(V.Local.iC).State.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Zip_Code.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Policy_Origin.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Shop_ID.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Employer_Name.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Employer_EIN.FieldVal,V.Local.sFieldVals)
+		'This string builds employer street, employer city, employer_state, employer zip, provider name
+		F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}",V.Local.sFieldVals,V.DataTable.dt1095Emp(V.Local.iC).Employer_Address.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Employer_City.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Employer_State.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Employer_Country_Zip.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).CP_Name.FieldVal,V.Local.sFieldVals)
+		'This strinb builds provider Ein, provider telephone, provider street address, provider city, provider city, provider state, provider country zip.
+		F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}*!*{6}",V.Local.sFieldVals,V.DataTable.dt1095Emp(V.Local.iC).Provider_Ein.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Provider_Telephone.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Provider_Address.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Provider_City.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Provider_State.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Provider_Country_Zip.FieldVal,V.Local.sFieldVals)
+	F.Intrinsic.Control.EndIf
+	
+	F.Data.DataTable.Clone("dt1095B4","dt1095B4Copy",True)
+	'Flagg all 1094B recs where u.1094B.filing ID = u1095Emp.Rec_ID
+	F.Intrinsic.Control.For(V.Local.Ord,0,V.DataTable.dt1095B4.RowCount--,1)
+		F.Intrinsic.Control.If(V.DataTable.dt1095B4(V.Local.Ord).Filing_ID.FieldVal,=,V.DataTable.dt1095Emp(V.local.iC).Rec_ID.FieldVal)
+			F.Data.DataTable.AddRow("dt1095B4Copy","Rec_Id",V.DataTable.dt1095B4(V.Local.Ord).Rec_ID.FieldVal,"Filing_ID",V.DataTable.dt1095B4(V.Local.Ord).Filing_ID.FieldVal,"Covered_Name",V.DataTable.dt1095B4(V.Local.Ord).Covered_Name.FieldVal,"SSN",V.DataTable.dt1095B4(V.Local.Ord).SSN.FieldVal,"DOB",V.DataTable.dt1095B4(V.Local.Ord).DOB.FieldVal,"All_Months",V.DataTable.dt1095B4(V.Local.Ord).All_Months.FieldVal,"Jan",V.DataTable.dt1095B4(V.Local.Ord).Jan.FieldVal,"Feb",V.DataTable.dt1095B4(V.Local.Ord).Feb.FieldVal,"Mar",V.DataTable.dt1095B4(V.Local.Ord).Mar.FieldVal,"Apr",V.DataTable.dt1095B4(V.Local.Ord).Apr.FieldVal,"May",V.DataTable.dt1095B4(V.Local.Ord).May.FieldVal,"Jun",V.DataTable.dt1095B4(V.Local.Ord).Jun.FieldVal,"Jul",V.DataTable.dt1095B4(V.Local.Ord).Jul.FieldVal,"Aug",V.DataTable.dt1095B4(V.Local.Ord).Aug.FieldVal,"Sep",V.DataTable.dt1095B4(V.Local.Ord).Sep.FieldVal,"Oct",V.DataTable.dt1095B4(V.Local.Ord).Oct.FieldVal,"Nov",V.DataTable.dt1095B4(V.Local.Ord).Nov.FieldVal,"Dec",V.DataTable.dt1095B4(V.Local.Ord).Dec.FieldVal)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.Ord)
+
+	'Loop through Covered Individuals (udt u1095B4) and set in proper fields (Part IV of 1095-B, Page 1 and 3)
+	F.Intrinsic.Control.If(V.DataTable.dt1095B4Copy.RowCount--,<,0)
+		F.Intrinsic.Control.For(V.Local.i,0,17,1)
+			F.Intrinsic.Control.If(V.Local.sYr,>,"2017")
+				F.Intrinsic.Control.If(V.Local.i,=,6)
+					F.Intrinsic.String.Build("{0}*!**!**!**!**!*",V.Local.sFieldVals,V.Local.sFieldVals)
+				F.Intrinsic.Control.EndIf
+				F.Intrinsic.String.Build("{0}*!**!**!**!**!**!**!**!**!**!**!**!**!**!**!**!**!**!*",V.Local.sFieldVals,V.Local.sFieldVals)
+			F.Intrinsic.Control.Else
+				F.Intrinsic.Control.If(V.Local.i,=,6)
+					F.Intrinsic.String.Build("{0}*!**!**!*",V.Local.sFieldVals,V.Local.sFieldVals)
+				F.Intrinsic.Control.EndIf
+				F.Intrinsic.String.Build("{0}*!**!**!**!**!**!**!**!**!**!**!**!**!**!**!**!*",V.Local.sFieldVals,V.Local.sFieldVals)
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Next(V.Local.i)
+	F.Intrinsic.Control.Else
+		F.Intrinsic.Control.For(V.Local.iC2,0,V.DataTable.dt1095B4Copy.RowCount--,1)
+			F.Intrinsic.Control.If(V.Local.sYr,>,"2017")
+			
+				'Splitting Employee Name into First name, Middle name and Last name
+				F.Intrinsic.String.Split(V.DataTable.dt1095B4Copy(V.Local.iC2).Covered_Name.FieldValTrim," ",V.Local.sCName)
+				F.Intrinsic.Control.If(V.Local.sCName,<>,"")
+					F.Intrinsic.Control.If(V.Local.sCName.UBound,=,2)
+						V.Local.sCFirst.Set(V.Local.sCName(0))
+						F.Intrinsic.String.Left(V.Local.sCName(1),1,V.Local.sCName(1))
+						V.Local.sCMiddle.Set(V.Local.sCName(1))
+						V.Local.sCLast.Set(V.Local.sCName(2))
+					F.Intrinsic.Control.ElseIf(V.Local.sCName.UBound,<,2)
+						V.Local.sCFirst.Set(V.Local.sCName(0))
+						V.Local.sCMiddle.Set("")
+						V.Local.sCLast.Set(V.Local.sCName(1))
+					F.Intrinsic.Control.ElseIf(V.Local.sCName.UBound,>,2)
+						V.Local.sCFirst.Set(V.Local.sCName(0))
+						F.Intrinsic.String.Left(V.Local.sCName(1),1,V.Local.sCMiddle)
+						V.Local.sCLast.Set(V.Local.sCName(2))
+						V.Local.i3.Set(3)
+						F.Intrinsic.Control.For(V.Local.i3,V.Local.i3,V.Local.sCName.UBound,1)
+							F.Intrinsic.String.Build("{0} {1}",V.Local.sCLast,V.Local.sCName(V.Local.i3),V.Local.sCLast)
+						F.Intrinsic.Control.Next(V.Local.i3)
+					F.Intrinsic.Control.EndIf
+				F.Intrinsic.Control.Else
+					V.Local.sCFirst.Set("")
+					V.Local.sCMiddle.Set("")
+					V.Local.sCLast.Set("")
+				F.Intrinsic.Control.EndIf
+		
+				F.Intrinsic.Control.If(V.Local.iC2,<=,17)
+					'On the seventh covered Individual (If any), we'll need to specify Employee name, SSN, and DOB at the top of page three of the PDF.
+					F.Intrinsic.Math.Add(V.local.iC2,1,V.Local.iNext)
+					'Checking if the Next record, which would be line 29, if it's blank, if it is NOT blank, then fill out the Name of Responsible Individual, SSN, and Employee's DOB on the top of page 3.
+					F.Intrinsic.Control.If(V.Local.iC2,=,6,"AND",V.DataTable.dt1095B4Copy(V.Local.iNext).Covered_Name.FieldVal,<>,"")
+						F.Intrinsic.String.Format(V.DataTable.dt1095Emp(V.Local.iC).Birthdate.FieldVal,"MM/DD/YYYY",V.Local.sDateFormat)
+						F.Intrinsic.Control.If(V.Local.sDateFormat,=,"01/01/1900")
+							V.Local.sDateFormat.Set("")
+						F.Intrinsic.Control.EndIf
+						F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}",V.Local.sFieldVals,V.Local.sFirst,V.Local.sMiddle,V.Local.sLast,V.DataTable.dt1095Emp(V.Local.iC).Social_Security_No.FieldVal,V.Local.sDateFormat,V.Local.sFieldVals)
+					'Else if there are no more additional Covered Individuals continued on Page 3, then we'll still need to account for blank fields in order for the SetFormFeilds to work.
+					F.Intrinsic.Control.Elseif(V.Local.iC2,=,6,"AND",V.DataTable.dt1095B4Copy(V.Local.iNext).Covered_Name.FieldVal,=,"")
+						F.Intrinsic.String.Build("{0}*!**!**!**!**!*",V.Local.sFieldVals,V.Local.sFieldVals)
+					F.Intrinsic.Control.EndIf
+					F.Intrinsic.String.Format(V.DataTable.dt1095B4Copy(V.Local.iC2).DOB.FieldVal,"MM/DD/YYYY",V.Local.sDateFormat)
+					'Covered name, ssn, DOB, ALl Month, Jan, Feb, Mar, Apr, May	
+					F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}*!*{6}*!*{7}*!*{8}*!*{9}*!*{10}*!*{11}",V.Local.sFieldVals,V.Local.sCFirst,V.Local.sCMiddle,V.Local.sCLast,V.DataTable.dt1095B4Copy(V.Local.iC2).SSN.FieldVal,V.Local.sDateFormat,V.DataTable.dt1095B4Copy(V.Local.iC2).All_Months.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Jan.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Feb.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Mar.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Apr.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).May.FieldVal,V.Local.sFieldVals)
+					'Jun, Jul, Aug, Sep, Oct, Nov, Dec
+					F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}*!*{6}*!*{7}",V.Local.sFieldVals,V.DataTable.dt1095B4Copy(V.Local.iC2).Jun.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Jul.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Aug.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Sep.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Oct.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Nov.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Dec.FieldVal,V.Local.sFieldVals)
+				F.Intrinsic.Control.Endif
+				
+				F.Intrinsic.String.Replace(V.Local.sFieldVals,"True","1",V.Local.sFieldVals)
+				F.Intrinsic.String.Replace(V.Local.sFieldVals,"False","0",V.Local.sFieldVals)
+				
+			F.Intrinsic.Control.Else
+				F.Intrinsic.Control.If(V.Local.iC2,<=,17)
+					'On the seventh covered Individual (If any), we'll need to specify Employee name, SSN, and DOB at the top of page three of the PDF.
+					F.Intrinsic.Math.Add(V.local.iC2,1,V.Local.iNext)
+					'Checking if the Next record, which would be line 29, if it's blank, if it is NOT blank, then fill out the Name of Responsible Individual, SSN, and Employee's DOB on the top of page 3.
+					F.Intrinsic.Control.If(V.Local.iC2,=,6,"AND",V.DataTable.dt1095B4Copy(V.Local.iNext).Covered_Name.FieldVal,<>,"")
+						F.Intrinsic.String.Format(V.DataTable.dt1095Emp(V.Local.iC).Birthdate.FieldVal,"MM/DD/YYYY",V.Local.sDateFormat)
+						F.Intrinsic.Control.If(V.Local.sDateFormat,=,"01/01/1900")
+							V.Local.sDateFormat.Set("")
+						F.Intrinsic.Control.EndIf
+						F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}",V.Local.sFieldVals,V.DataTable.dt1095Emp(V.Local.iC).Name.FieldVal,V.DataTable.dt1095Emp(V.Local.iC).Social_Security_No.FieldVal,V.Local.sDateFormat,V.Local.sFieldVals)
+					'Else if there are no more additional Covered Individuals continued on Page 3, then we'll still need to account for blank fields in order for the SetFormFeilds to work.
+					F.Intrinsic.Control.Elseif(V.Local.iC2,=,6,"AND",V.DataTable.dt1095B4Copy(V.Local.iNext).Covered_Name.FieldVal,=,"")
+						F.Intrinsic.String.Build("{0}*!**!**!*",V.Local.sFieldVals,V.Local.sFieldVals)
+					F.Intrinsic.Control.EndIf
+					F.Intrinsic.String.Format(V.DataTable.dt1095B4Copy(V.Local.iC2).DOB.FieldVal,"MM/DD/YYYY",V.Local.sDateFormat)
+					'Covered name, ssn, DOB, ALl Month, Jan, Feb, Mar, Apr, May	
+					F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}*!*{6}*!*{7}*!*{8}*!*{9}",V.Local.sFieldVals,V.DataTable.dt1095B4Copy(V.Local.iC2).Covered_Name.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).SSN.FieldVal,V.Local.sDateFormat,V.DataTable.dt1095B4Copy(V.Local.iC2).All_Months.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Jan.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Feb.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Mar.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Apr.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).May.FieldVal,V.Local.sFieldVals)
+					'Jun, Jul, Aug, Sep, Oct, Nov, Dec
+					F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}*!*{6}*!*{7}",V.Local.sFieldVals,V.DataTable.dt1095B4Copy(V.Local.iC2).Jun.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Jul.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Aug.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Sep.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Oct.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Nov.FieldVal,V.DataTable.dt1095B4Copy(V.Local.iC2).Dec.FieldVal,V.Local.sFieldVals)
+				F.Intrinsic.Control.Endif
+				
+				F.Intrinsic.String.Replace(V.Local.sFieldVals,"True","1",V.Local.sFieldVals)
+				F.Intrinsic.String.Replace(V.Local.sFieldVals,"False","0",V.Local.sFieldVals)
+				
+			F.Intrinsic.Control.EndIf
+		F.Intrinsic.Control.Next(V.Local.iC2)
+	
+		F.Intrinsic.Control.If(V.DataTable.dt1095B4Copy.RowCount--,<>,17)
+			F.Intrinsic.Control.For(V.Local.iC2,V.Local.iC2,17,1)
+				F.Intrinsic.Control.If(V.Local.sYr,>,"2017")
+					F.Intrinsic.Control.If(V.Local.iC2,=,6)
+						F.Intrinsic.String.Build("{0}*!**!**!**!**!*",V.Local.sFieldVals,V.Local.sFieldVals)
+					F.Intrinsic.Control.EndIf
+					F.Intrinsic.String.Build("{0}*!**!**!**!**!**!**!**!**!**!**!**!**!**!**!**!**!**!*",V.Local.sFieldVals,V.Local.sFieldVals)
+				F.Intrinsic.Control.Else
+					F.Intrinsic.Control.If(V.Local.iC2,=,6)
+						F.Intrinsic.String.Build("{0}*!**!**!*",V.Local.sFieldVals,V.Local.sFieldVals)
+					F.Intrinsic.Control.EndIf
+					F.Intrinsic.String.Build("{0}*!**!**!**!**!**!**!**!**!**!**!**!**!**!**!**!*",V.Local.sFieldVals,V.Local.sFieldVals)
+				F.Intrinsic.Control.EndIf
+			F.Intrinsic.Control.Next(V.Local.iC2)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf	
+
+	'Unflagging previously flagged records within the original UDT.
+	'F.Intrinsic.Variable.UDTUnFlagAll(V.uGlobal.u1095B4)
+	F.Intrinsic.Control.If(V.Local.iC,=,0)
+		F.Intrinsic.String.Build("{0}\1095_Temp{1}.pdf",V.Caller.LocalGSSTempDir,V.Local.iRec,V.Global.s1095TempFiles)
+	F.Intrinsic.Control.Elseif(V.Local.iC,>,0)
+		F.Intrinsic.String.Build("{0}*!*{1}\1095_Temp{2}.pdf",V.Global.s1095TempFiles,V.Caller.LocalGSSTempDir,V.Local.iRec,V.Global.s1095TempFiles)
+	F.Intrinsic.Control.EndIf
+
+	'Setting the form values and fields to the user's PDF copy
+	F.Intrinsic.String.Build("{0}\1095_Temp{1}.pdf",V.Caller.LocalGSSTempDir,V.Local.iRec,V.Local.sTempDir)
+	F.Intrinsic.File.Exists(V.Local.sTempDir,V.Local.bRet)
+	F.Intrinsic.Control.If(V.Local.bRet,=,True)
+		F.Intrinsic.File.DeleteFile(V.Local.sTempDir)
+	F.Intrinsic.Control.EndIf
+'info that's on the top of page 3 of the 1095b
+Function.Intrinsic.Control.If(v.Local.sYr,=,"2019") 
+	f.Intrinsic.String.Split(v.Local.sFieldVals,"*!*",v.Local.sFieldVals)
+	Function.Intrinsic.Control.If(v.Local.sFieldVals(139).Trim,<>,"")
+		v.Local.sFieldVals(134).Set(v.Local.sFirst.trim)
+		v.Local.sFieldVals(135).Set(v.Local.sMiddle.trim)
+		v.Local.sFieldVals(136).Set(v.Local.sLast.Trim) 
+		v.Local.sFieldVals(137).Set(v.Local.sfieldvals(5).trim)
+		v.Local.sFieldVals(138).Set(v.Local.sFieldVals(6).trim)
+	Function.Intrinsic.Control.EndIf
+	
+	f.Intrinsic.String.Join(v.Local.sFieldVals,"*!*",v.Local.sfieldvals)
+Function.Intrinsic.Control.EndIf
+	'F.Intrinsic.File.CopyFile(V.Local.sPDFDir,V.Local.sTempDir)
+	F.Automation.PDF.SetFormFields("F1095B",V.Local.sTempDir,V.Local.sFields,V.Local.sFieldVals,True)
+	F.Automation.PDF.Close("F1095B")
+	F.Intrinsic.Math.Add(V.Local.iRec,1,V.Local.iRec)
+	
+	F.Data.DataTable.Close("dt1095B4Copy")
+
+F.Intrinsic.Control.Next(V.Local.iC)
+
+'Open Merged PDF, use a reference name and fully qualified path
+F.Automation.PDF.Open("F1095B",V.Local.sPDFDir)
+'Final 1095-B Merge FQP, to be used to merge with 1094-B Forms
+F.Intrinsic.String.Build("{0}\1095B_MergeFile.pdf",V.Caller.LocalGSSTempDir,V.Global.s1095MergDir)
+'Perfom PDF Merge
+F.Automation.PDF.Merge(V.Global.s1095TempFiles,V.Global.s1095MergDir)
+F.Automation.PDF.Close("F1095B")
+
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("1094/1095B Form for {0} is not yet released.",V.Local.sYr,V.Local.sMsg)
+	F.Intrinsic.UI.Msgbox(V.Local.sMsg)
+		F.Intrinsic.Control.CallSub(Ss_form1_unload)
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("ss_form1_unload_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_PY_1094_1095-B.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+program.sub.Load_rst_1095B.End
+
+Program.Sub.Load_Rst_1094B.Start
+F.Intrinsic.Control.SetErrorHandler("Load_Rst_1094B_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+
+V.Local.sName.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sYr.Declare(String)
+V.local.sPDFDir.Declare(String)
+V.Local.sFields.Declare(String)
+V.Local.sFieldVals.Declare(String)
+V.Local.sTempDir.Declare(String)
+V.local.sFilesMerg.Declare(String)
+V.Local.s1094MergDir.Declare(String)
+V.Local.sFinalFQP.Declare(String)
+V.Local.iRec.Declare(Long)
+V.Local.iC.Declare(Long)
+V.Local.iHdl.Declare(Long)
+V.Local.iTot1095.Declare(Long)
+V.Local.bRet.Declare(Boolean,0)
+V.Local.sMsg.Declare(String)
+v.Local.bLocked.Declare(Boolean)
+
+'Formatting datepicker value to use in SQL statement
+F.Intrinsic.String.Format(V.Screen.SS_Form1!dtp1_year.Value,"yyyy",V.Local.sYr)
+F.Intrinsic.String.Build("Select Rec_ID, Filing_Year, Filers_Name, Ein, Contact_Name, Telephone, Address, City, State, Country_Zip From Payroll_1094B Where Filing_Year = '{0}'",V.Local.sYr,V.Local.sSQL)
+Function.Data.DataTable.CreateFromSQL("dt1094B","conx",V.Local.sSql,True)
+
+F.Intrinsic.Control.If(V.DataTable.dt1094B.Exists,=,False,"OR",V.DataTable.dt1094B.RowCount--,<,0)
+	F.Data.DataTable.Close("dt1094B")
+	F.Intrinsic.Control.CallSub(Pulldefaultinfo)
+F.Intrinsic.Control.EndIf
+
+'If records found, create file.  Otherwise, print blank. Left off here 9/15/15 4:43
+'F.Intrinsic.Control.If(V.uGlobal.u1094B.Ubound,<>,-1)
+	'Creating PDF Path
+F.Intrinsic.String.Build("{0}\Busint\PY_{1}_f1094b.pdf",V.Caller.GlobalDir,V.Local.sYr,V.Local.sPDFDir)
+
+	'If file already exists in selected path, delete it and create the new one
+'F.Intrinsic.File.Exists(V.Global.sFileDirRet,V.Local.bRet)
+F.Intrinsic.File.Exists(V.Local.sPDFDir,V.Local.bRet)
+F.Intrinsic.Control.If(V.Local.bRet,=,True)
+	F.Intrinsic.File.Exists(V.Global.sFileDirRet,V.Local.bRet)
+	F.Intrinsic.Control.If(V.Local.bRet,=,True)
+		F.Intrinsic.File.DeleteFile(V.Global.sFileDirRet)
+	F.Intrinsic.Control.EndIf
+'	F.Intrinsic.Control.EndIf
+
+	'Fields needed from PDF
+	F.Automation.PDF.Open("F1094B",V.Local.sPDFDir)
+	F.Automation.PDF.GetFieldNames("F1094B",V.Local.sFields)
+	F.Automation.PDF.Close("F1094B")
+
+	'Looping through UDT and setting the values in a string to be used for the PDF.
+	'F.Intrinsic.Control.For(V.Local.iC,V.uGlobal.u1094B.LBound,V.uGlobal.u1094B.uBound,1)
+	F.Intrinsic.Control.For(V.Local.iC,0,V.DataTable.dt1094B.RowCount--,1)
+
+		F.Automation.PDF.Open("F1094B",V.Local.sPDFDir)
+		'F.Automation.PDF.GetFieldNames("F1094B",V.Local.sFields)
+		F.Intrinsic.String.Build("{0}*!*{1}*!*{2}*!*{3}*!*{4}*!*{5}*!*{6}*!*{7}*!*{8}*!*",V.DataTable.dt1094B(V.Local.iC).Filers_Name.FieldVal,V.DataTable.dt1094B(V.Local.iC).Ein.FieldVal,V.DataTable.dt1094B(V.Local.iC).Contact_Name.FieldVal,V.DataTable.dt1094B(V.Local.iC).Telephone.FieldVal,V.DataTable.dt1094B(V.Local.iC).Address.FieldVal,V.DataTable.dt1094B(V.Local.iC).City.FieldVal,V.DataTable.dt1094B(V.Local.iC).State.FieldVal,V.DataTable.dt1094B(V.Local.iC).Country_Zip.FieldVal,V.Global.iTot1095B,V.Local.sFieldVals)
+		'Creating temporary individual files so that we can merge them later.
+		F.Intrinsic.Control.If(V.Local.iC,=,0)
+			F.Intrinsic.String.Build("{0}\1094_Temp{1}.pdf",V.Caller.LocalGSSTempDir,V.Local.iRec,V.Global.s1094TempFiles)
+		F.Intrinsic.Control.Elseif(V.Local.iC,>,0)
+			F.Intrinsic.String.Build("{0}*!*{1}\1094_Temp{2}.pdf",V.Global.s1094TempFiles,V.Caller.LocalGSSTempDir,V.Local.iRec,V.Global.s1094TempFiles)
+		F.Intrinsic.Control.EndIf
+
+		'Seting the form values and fields to the user's PDF copy
+		F.Intrinsic.String.Build("{0}\1094_Temp{1}.pdf",V.Caller.LocalGSSTempDir,V.Local.iRec,V.Local.sTempDir)
+		F.Intrinsic.File.Exists(V.Local.sTempDir,V.Local.bRet)
+		F.Intrinsic.Control.If(V.Local.bRet,=,True)
+			F.Intrinsic.File.DeleteFile(V.Local.sTempDir)
+		F.Intrinsic.Control.EndIf
+
+		'Using the Global rec variable as a counter, and naming the temporary PDF files with these unique Global rec numbers so we can go back and merge them all together.
+		F.Intrinsic.Math.Add(V.Local.iRec,1,V.Local.iRec)
+		'Copies Busint file to user's FQP
+		'F.Intrinsic.File.CopyFile(V.Local.sPDFDir,V.Local.sTempDir)
+		F.Automation.PDF.setformfields("F1094B",V.Local.sTempDir,V.Local.sFields,V.Local.sFieldVals,True)
+		F.Automation.PDF.Close("F1094B")
+	F.Intrinsic.Control.Next(V.Local.iC)
+
+	'Open Merged PDF, use a reference name and fully qualified path
+	F.Automation.PDF.Open("F1094B",V.Local.sPDFDir)
+	'Perfom PDF Merge
+	F.Intrinsic.String.Build("{0}\1094B_MergeFile.pdf",V.Caller.LocalGSSTempDir,V.Local.s1094MergDir)
+	F.Automation.PDF.Merge(V.Global.s1094TempFiles,V.Local.s1094MergDir)
+	F.Automation.PDF.Close("F1094B")
+
+	'Merging Both 1094-B and 1095-B forms
+	F.Automation.PDF.Open("F1094B/F1095B",V.Local.sPDFDir)
+	F.Intrinsic.Control.If(V.Global.s1095MergDir,<>,"")
+		F.Intrinsic.String.Build("{0}*!*{1}",V.Local.s1094MergDir,V.Global.s1095MergDir,V.Local.sFinalFQP)
+	F.Intrinsic.Control.Else
+		V.Local.sFinalFQP.Set(V.Local.s1094MergDir)
+	F.Intrinsic.Control.Endif
+	f.Intrinsic.File.IsFileLocked(v.Global.sFileDirRet,v.Local.bLocked)	
+	F.Intrinsic.Control.If(v.Local.bLocked,=,True)
+		f.Intrinsic.String.Build("File: {0} is open. Please close the file and try again.",v.Global.sFileDirRet,v.Local.sError)
+		Function.Intrinsic.UI.Msgbox(v.Local.sError)
+		
+		Function.Intrinsic.Control.CallSub(ss_form1_unload)
+	Function.Intrinsic.Control.EndIf
+	F.Automation.PDF.Merge(V.local.sFinalFQP,V.Global.sFileDirRet)
+	F.Automation.PDF.Close("F1094B/F1095B")
+
+	'Stopping logging
+	F.Global.BI.StopLogging(V.Global.iRunID)
+	'Getting handle ID to open up with a PDF viewer
+	F.Intrinsic.File.GetHandle(V.Local.iHdl)
+	'Openning PDF
+	F.Intrinsic.Task.ShellExec(V.Local.iHdl,"Open",V.Global.sFileDirRet,"","",1)
+
+	'Cleaning up, deleting all the temp PDFs
+	F.Intrinsic.String.Split(V.Global.s1095TempFiles,"*!*",V.Global.s1095TempFiles)
+	F.Intrinsic.Control.For(V.Local.iC,V.Global.s1095TempFiles.LBound,V.Global.s1095TempFiles.UBound,1)
+		F.Intrinsic.File.Exists(V.Global.s1095TempFiles(V.Local.iC),V.Local.bRet)
+		F.Intrinsic.Control.If(V.Local.bRet,=,True)
+			F.Intrinsic.File.DeleteFile(V.Global.s1095TempFiles(V.local.iC))
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.iC)
+
+	'Cleaning up, deleting all the temp PDFs
+	F.Intrinsic.String.Split(V.Global.s1094TempFiles,"*!*",V.Global.s1094TempFiles)
+	F.Intrinsic.Control.For(V.Local.iC,V.Global.s1094TempFiles.LBound,V.Global.s1094TempFiles.UBound,1)
+		F.Intrinsic.File.Exists(V.Global.s1094TempFiles(V.Local.iC),V.Local.bRet)
+		F.Intrinsic.Control.If(V.Local.bRet,=,True)
+			F.Intrinsic.File.DeleteFile(V.Global.s1094TempFiles(V.local.iC))
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.Next(V.Local.iC)
+
+	F.Intrinsic.File.Exists(V.Local.s1094MergDir,V.Local.bRet)
+	F.Intrinsic.Control.If(V.Local.bRet,=,True)
+		F.Intrinsic.File.DeleteFile(V.Local.s1094MergDir)
+	F.Intrinsic.Control.EndIf
+
+	F.Intrinsic.File.Exists(V.Global.s1095MergDir,V.Local.bRet)
+	F.Intrinsic.Control.If(V.Local.bRet,=,True)
+		F.Intrinsic.File.DeleteFile(V.Global.s1095MergDir)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("1094/1095B Form for {0} is not yet released.",V.Local.sYr,V.Local.sMsg)
+	F.Intrinsic.UI.Msgbox(V.Local.sMsg)
+		F.Intrinsic.Control.CallSub(Ss_form1_unload)
+F.Intrinsic.Control.EndIf
+	'Ending Program
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+
+'F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Load_Rst_1094B_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_PY_1094_1095-B.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.Load_rst_1094B.End
+
+Program.Sub.Comments.Start
+${$0$}$$}$$}$12:00:00 AM$}$False
+Program.Sub.Comments.End
+
+Program.Sub.ScreenSS.Start
+SS_Form1{{CAPTION::1094/1095-B
+SS_Form1.CTRL{{NAME::dtp1_year\\TYPE::6\\CAPTION::Filing Year\\TABSTOP::1\\GROUP::-1\\BROWSER::0\\INTL::242801\\SIZE::1
+SS_Form1.CTRL{{NAME::cmd1Print\\TYPE::5\\CAPTION::Print\\TABSTOP::2\\GROUP::-1\\BROWSER::0\\INTL::452800\\SIZE::1
+
+Program.Sub.ScreenSS.End
+
